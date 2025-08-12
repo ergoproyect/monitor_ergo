@@ -1,44 +1,22 @@
-const express = require("express");
-const cors = require("cors");
+app.get('/sigfox', (req, res) => {
+  console.log("🔍 Querystring recibido:", req.query); // <-- Aquí imprime todo el query recibido
 
-const app = express();
-app.use(cors());
+  const dispositivo = req.query.id;
+  const timestamp = req.query.time;
 
-// Ruta raíz
-app.get("/", (req, res) => {
-  res.send("Servidor Monitor Ergo activo ✅");
-});
+  const datos = [
+    Number(req.query.data1), Number(req.query.data2), Number(req.query.data3),
+    Number(req.query.data4), Number(req.query.data5), Number(req.query.data6),
+    Number(req.query.data7), Number(req.query.data8), Number(req.query.data9),
+    Number(req.query.data10), Number(req.query.data11), Number(req.query.data12)
+  ];
 
-// Ruta para recibir datos de Sigfox
-app.get("/sigfox", (req, res) => {
-  const {
-    id,
-    time,
-    data1, data2, data3, data4, data5, data6,
-    data7, data8, data9, data10, data11, data12
-  } = req.query;
+  console.log("📩 Datos recibidos:", {
+    dispositivo,
+    timestamp,
+    datos
+  });
 
-  const registro = {
-    dispositivo: id,
-    timestamp: time,
-    datos: [
-      Number(data1), Number(data2), Number(data3), Number(data4),
-      Number(data5), Number(data6), Number(data7), Number(data8),
-      Number(data9), Number(data10), Number(data11), Number(data12)
-    ]
-  };
-
-  console.log("📩 Datos recibidos:", registro);
-
-  // Respuesta a Sigfox
-  res.status(200).send("OK");
-
-  // Aquí puedes guardar los datos en una base de datos (MongoDB, PostgreSQL, etc.)
-});
-
-// Puerto dinámico para Render
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
+  res.send('OK');
 });
 
