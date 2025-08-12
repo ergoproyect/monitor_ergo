@@ -1,6 +1,7 @@
 {
-  "name": "sigfox-backend",
+  "name": "monitor-ergo",
   "version": "1.0.0",
+  "description": "Backend para recibir datos de Sigfox y monitorear posturas",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
