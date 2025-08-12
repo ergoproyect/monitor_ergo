@@ -1,5 +1,9 @@
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 10000; // Render usa un puerto dinámico
+
 app.get('/sigfox', (req, res) => {
-  console.log("🔍 Querystring recibido:", req.query); // <-- Aquí imprime todo el query recibido
+  console.log("🔍 Querystring recibido:", req.query);
 
   const dispositivo = req.query.id;
   const timestamp = req.query.time;
@@ -18,5 +22,14 @@ app.get('/sigfox', (req, res) => {
   });
 
   res.send('OK');
+});
+
+// Ruta de prueba para confirmar que el servidor está vivo
+app.get('/', (req, res) => {
+  res.send('Servidor Monitor Ergo activo ✅');
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
 
