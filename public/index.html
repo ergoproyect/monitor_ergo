@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Monitor Ergonomía</title>
+<style>
+  body { font-family: Arial, background: #f4f4f4; text-align: center; }
+  #contenedor { position: relative; display: inline-block; }
+  #imagen { width: 500px; }
+  .etiqueta {
+    position: absolute;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    font-size: 14px;
+  }
+  #gauge {
+    margin-top: 30px;
+  }
+  #bombillo {
+    margin-top: 20px;
+    width: 60px;
+  }
+</style>
+</head>
+<body>
+<h1>📊 Monitor de Posturas</h1>
+<div id="contenedor">
+  <img id="imagen" src="Templates/Imagen/interfaz_hombre.png">
+  <canvas id="canvas" width="500" height="600" style="position:absolute; top:0; left:0;"></canvas>
+  <div class="etiqueta" id="lblCabeza" style="top: 20px; left: 380px;">Cabeza: --</div>
+  <div class="etiqueta" id="lblHombros" style="top: 80px; left: 380px;">Hombros: --</div>
+  <div class="etiqueta" id="lblAntebrazoIzq" style="top: 180px; left: 30px;">Ant. Izq: --</div>
+  <div class="etiqueta" id="lblAntebrazoDer" style="top: 180px; left: 380px;">Ant. Der: --</div>
+  <div class="etiqueta" id="lblEspalda" style="top: 300px; left: 380px;">Espalda: --</div>
+</div>
+
+<canvas id="gauge" width="300" height="150"></canvas>
+<br>
+<img id="bombillo" src="Templates/Imagen/bombillo_verde.png">
+
+<script>
+async function actualizar() {
+  const res = await fetch('/api/ultimo');
+  const data = await res.json();
+
+  const angulos = {
+    cabeza: data.datos[0],
+    hombros: data.datos[1],
+    antebrazoIzq: data.datos[2],
+    antebrazoDer: data.datos[3],
+    espalda: data.datos[4],
+    owas: data.datos[5]
+  };
+
+  document.getElementById('lblCabeza').innerText = `Cabeza: ${angulos.cabeza}°`;
+  document.getElementById('lblHombros').innerText = `Hombros: ${angulos.hombros}°`;
+  document.getElementById('lblAntebrazoIzq').innerText = `Ant. Izq: ${angulos.antebrazoIzq}°`;
+  document.getElementById('lblAntebrazoDer').innerText = `Ant. Der: ${angulos.antebrazoDer}°`;
+  document.getElementById('lblEspalda').innerText = `Espalda: ${angulos.espalda}°`;
+
+  // 🔥 Bombillo dinámico
+  const bombillo = document.getElementById('bombillo');
+  if (angulos.owas == 4) bombillo.src = "Templates/Imagen/bombillo_rojo.png";
+  else if (angulos.owas == 2 || angulos.owas == 3) bombillo.src = "Templates/Imagen/bombillo_naranja.png";
+  else bombillo.src = "Templates/Imagen/bombillo_verde.png";
+
+  // 🎯 Gauge OWAS
+  dibujarGauge(angulos.owas);
+
+  // ✏️ Líneas en canvas
+  dibujarLineas();
+}
+
+function dibujarLineas() {
+  const c = document.getElementById('canvas');
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 2;
+
+  const puntos = {
+    cabeza: {x: 250, y: 60, tx: 380, ty: 30},
+    hombros: {x: 250, y: 120, tx: 380, ty: 90},
+    antebrazoIzq: {x: 180, y: 200, tx: 70, ty: 190},
+    antebrazoDer: {x: 320, y: 200, tx: 420, ty: 190},
+    espalda: {x: 250, y: 280, tx: 380, ty: 310}
+  };
+
+  Object.values(puntos).forEach(p => {
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.tx, p.ty);
+    ctx.stroke();
+  });
+}
+
+function dibujarGauge(valor) {
+  const canvas = document.getElementById('gauge');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const centerX = 150, centerY = 140, radius = 100;
+  const startAngle = Math.PI, endAngle = 0;
+
+  // Colores de zonas
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, Math.PI, Math.PI*1.5);
+  ctx.strokeStyle = "green"; ctx.lineWidth = 20; ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, Math.PI*1.5, Math.PI*1.75);
+  ctx.strokeStyle = "orange"; ctx.lineWidth = 20; ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, Math.PI*1.75, 0);
+  ctx.strokeStyle = "red"; ctx.lineWidth = 20; ctx.stroke();
+
+  // Aguja
+  const angle = Math.PI + (valor/4)*Math.PI;
+  const x = centerX + Math.cos(angle) * (radius - 20);
+  const y = centerY + Math.sin(angle) * (radius - 20);
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Texto
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "black";
+  ctx.fillText("OWAS: " + valor, centerX - 30, centerY - 110);
+}
+
+setInterval(actualizar, 3000);
+actualizar();
+</script>
+</body>
+</html>
+
