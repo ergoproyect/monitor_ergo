@@ -52,8 +52,8 @@ body {
 }
 
 .bombillo {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 10px auto; /* centrado y con margen abajo */
-}}
-
+  display: block;
+  width: 60px;
+  height: 60px;
+  margin: 1rem auto; /* lo centra y deja espacio */
+} 
